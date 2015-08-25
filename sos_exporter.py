@@ -71,11 +71,15 @@ XML_TIME_POSITION = """
 """
 
 XML_OBSERVED_PROPERTY = """
-    <om:observedProperty xlink:href="http://vocab.example.com/sensorweb/phenomenon/{}"/>
+    <om:observedProperty xlink:href="{0}"/>
 """
 
 XML_RESULT = """
     <om:result xsi:type="gml:MeasureType" uom="{0}">{1}</om:result>
+"""
+
+XML_RESULT_TEXT = """
+    <om:result xsi:type="xs:string">{0}</om:result>
 """
 
 POST_HEADER = {'Content-type': 'application/xml; charset=UTF-8'}
@@ -86,7 +90,7 @@ POX_URL = "http://130.211.71.130:8080/52n-sos-webapp/sos"
 
 if len(sys.argv) > 1:
     stationCode = str(sys.argv[1])
-    if not stationCode in STATIONS:
+    if stationCode not in STATIONS:
         sys.exit("Unkown station code. Must be in {}".format(STATIONS.keys()))
 else:
     sys.exit("Usage: python sos_exporter <station code>")
@@ -110,21 +114,19 @@ for metar in metar_list:
     log.info("==== DECODED DATA ====")
     obs = Metar.Metar(metar[1])
 
-    log.info("station: {0:4s}, time: {1:20s}, temp: {2:5s}, dew point: {3:5s}, pressure: {4:10s}".format(
-        # The 'station_id' attribute is a string
+    log.info("Original METAR: {5}\nstation: {0:4s}, time: {1:20s}, temp: {2:5s}, dew point: {3:5s}, pressure: {4:10s}".format(
         obs.station_id
-        # The 'time' attribute is a datetime object
-        ,obs.time.strftime("%Y-%m-%dT%H:%M:00.000+00:00")
-        # The 'temp' and 'dewpt' attributes are temperature objects
-        ,obs.temp.string("C")
-        ,obs.dewpt.string("C")
-        # The 'press' attribute is a pressure object.
-        ,obs.press.string("hpa")))
+        , obs.time.strftime("%Y-%m-%dT%H:%M:00.000+00:00")
+        , obs.temp.string("C")
+        , obs.dewpt.string("C")
+        , obs.press.string("hpa")
+        , obs.code))
 
     observations = [
-        ("temperature", "°C",  obs.temp.value('C'))
-        ,("dew_point",   "°C",  obs.dewpt.value('C'))
-        ,("atmospheric_pressure", "hPa", obs.press.value('hPa'))
+        ("http://sweet.jpl.nasa.gov/2.3/propTemperature.owl#Temperature",  "°C",  obs.temp.value('C'))
+        , ("http://sweet.jpl.nasa.gov/2.3/propTemperature.owl#DewPoint",    "°C",  obs.dewpt.value('C'))
+        , ("http://sweet.jpl.nasa.gov/2.3/phenAtmoPressure.owl#Barometric", "hPa", obs.press.value('hPa'))
+        , ("http://vocab.example.com/phenomenon/metarString", "", obs.code)
     ]
 
     # these are static for every observation
@@ -134,7 +136,11 @@ for metar in metar_list:
 
     for observation in observations:
         xmlObsProp = XML_OBSERVED_PROPERTY.format(observation[0])
-        xmlResult = XML_RESULT.format(observation[1], observation[2])
+        if (observation[1] == ""):
+            xmlResult = XML_RESULT_TEXT.format(observation[1])
+        else:
+            xmlResult = XML_RESULT.format(observation[1], observation[2])
+
         content = timePositionXml + procedureXref + xmlObsProp + featureXml + xmlResult
         insertObsXml = XML_INSERT_OBS.format(utils.offeringId(obs.station_id), content)
 

@@ -79,32 +79,39 @@
               <sml:inputs>
                 <sml:InputList>
                   <sml:input name="temperature">
-                    <swe:ObservableProperty definition="http://vocab.example.com/sensorweb/phenomenon/temperature"/>
+                    <swe:ObservableProperty definition="http://sweet.jpl.nasa.gov/2.3/propTemperature.owl#Temperature"/>
                   </sml:input>
                   <sml:input name="dew_point">
-                    <swe:ObservableProperty definition="http://vocab.example.com/sensorweb/phenomenon/dew_point"/>
+                    <swe:ObservableProperty definition="http://sweet.jpl.nasa.gov/2.3/propTemperature.owl#DewPoint"/>
                   </sml:input>
                   <sml:input name="atmospheric_pressure">
-                    <swe:ObservableProperty definition="http://vocab.example.com/sensorweb/phenomenon/atmospheric_pressure"/>
+                    <swe:ObservableProperty definition="http://sweet.jpl.nasa.gov/2.3/phenAtmoPressure.owl#Barometric"/>
                   </sml:input>
+                  <sml:input name="metar_string">
+                    <swe:ObservableProperty definition="http://vocab.example.com/phenomenon/metarString"/>
+                  </sml:input>
+
                 </sml:InputList>
               </sml:inputs>
               <sml:outputs>
                 <sml:OutputList>
                   <sml:output name="temperature">
-                    <swe:Quantity definition="http://vocab.example.com/sensorweb/phenomenon/temperature">
+                    <swe:Quantity definition="http://sweet.jpl.nasa.gov/2.3/propTemperature.owl#Temperature">
                       <swe:uom code="°C"/>
                     </swe:Quantity>
                   </sml:output>
                   <sml:output name="dew_point">
-                    <swe:Quantity definition="http://vocab.example.com/sensorweb/phenomenon/dew_point">
+                    <swe:Quantity definition="http://sweet.jpl.nasa.gov/2.3/propTemperature.owl#DewPoint">
                       <swe:uom code="°C"/>
                     </swe:Quantity>
                   </sml:output>
                   <sml:output name="atmospheric_pressure">
-                    <swe:Quantity definition="http://vocab.example.com/sensorweb/phenomenon/atmospheric_pressure">
+                    <swe:Quantity definition="http://sweet.jpl.nasa.gov/2.3/phenAtmoPressure.owl#Barometric">
                       <swe:uom code="hPa"/>
                     </swe:Quantity>
+                  </sml:output>
+                  <sml:output name="metar_string">
+                    <swe:ObservableProperty definition="http://vocab.example.com/phenomenon/metarString"/>
                   </sml:output>
                 </sml:OutputList>
               </sml:outputs>
@@ -113,9 +120,10 @@
         </sml:SensorML>
     </swes:procedureDescription>
     <!-- multiple values possible -->
-    <swes:observableProperty>http://vocab.example.com/sensorweb/phenomenon/temperature</swes:observableProperty>
-    <swes:observableProperty>http://vocab.example.com/sensorweb/phenomenon/dew_point</swes:observableProperty>
-	  <swes:observableProperty>http://vocab.example.com/sensorweb/phenomenon/atmospheric_pressure</swes:observableProperty>
+    <swes:observableProperty>http://sweet.jpl.nasa.gov/2.3/propTemperature.owl#Temperature</swes:observableProperty>
+    <swes:observableProperty>http://sweet.jpl.nasa.gov/2.3/propTemperature.owl#DewPoint</swes:observableProperty>
+    <swes:observableProperty>http://sweet.jpl.nasa.gov/2.3/phenAtmoPressure.owl#Barometric</swes:observableProperty>
+	  <swes:observableProperty>http://vocab.example.com/phenomenon/metarString</swes:observableProperty>
     <swes:metadata>
         <sos:SosInsertionMetadata>
             <sos:observationType>http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement</sos:observationType>
