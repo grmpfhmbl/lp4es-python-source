@@ -14,7 +14,7 @@ from metar import Metar
 
 import utils
 
-log.basicConfig(level=log.INFO)
+log.basicConfig(level=log.DEBUG)
 
 STATIONS = {
     'LOWS': ["Salzburg Airport", "47.795 13.00388333"]
@@ -126,7 +126,7 @@ for metar in metar_list:
         ("http://sweet.jpl.nasa.gov/2.3/propTemperature.owl#Temperature",  "°C",  obs.temp.value('C'))
         , ("http://sweet.jpl.nasa.gov/2.3/propTemperature.owl#DewPoint",    "°C",  obs.dewpt.value('C'))
         , ("http://sweet.jpl.nasa.gov/2.3/phenAtmoPressure.owl#Barometric", "hPa", obs.press.value('hPa'))
-        , ("http://vocab.example.com/phenomenon/metarString", "", obs.code)
+#        , ("http://vocab.example.com/phenomenon/metarString", "", obs.code)
     ]
 
     # these are static for every observation
