@@ -1,3 +1,14 @@
+# this script contains a couple of variables and functions used by
+# sos_exporter and sos_graph
+
+POX_URL = "http://130.211.71.130:8080/52n-sos-webapp/sos"
+
+POST_HEADER = {'Content-type': 'application/xml; charset=UTF-8'}
+
+STATIONS = {
+    'LOWS': ["Salzburg Airport", "47.795 13.00388333"]
+}
+
 
 def procedureId(stationCode: str):
     return "http://vocab.example.com/sensorweb/procedure/metar/{}".format(stationCode.lower())

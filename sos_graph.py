@@ -1,20 +1,26 @@
 #!/usr/bin/env python
 #
-# fetches data from SOS and plots it
+# This skript fetches the observations of the last 24hrs of a given station.
+# Usage: python sos_exporter <station code>
+#
+# to access your SOS server, please change the POX_URL variable in utils
 import sys
-import datetime
+from datetime import datetime, timedelta
 import logging as log
-import traceback
 import urllib.request
 
 import xml.etree.ElementTree as etree
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+import matplotlib.dates as md
+
+import utils
 
 log.basicConfig(level=log.INFO)
 
-XML_GET_OBS = """
+# the XML for GetObservation. For more details see <URL to a spec?>
+XML_GET_OBS = """<?xml version="1.0" encoding="UTF-8"?>
 <sos:GetObservation
     xmlns:sos="http://www.opengis.net/sos/2.0"
     xmlns:fes="http://www.opengis.net/fes/2.0"
@@ -25,30 +31,48 @@ XML_GET_OBS = """
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     service="SOS" version="2.0.0"
     xsi:schemaLocation="http://www.opengis.net/sos/2.0 http://schemas.opengis.net/sos/2.0/sos.xsd">
-    <sos:procedure>http://vocab.example.com/sensorweb/procedure/metar/lows</sos:procedure>
-  <!--
+
+    <!-- the procedure we want to query -->
+    <sos:procedure>{0}</sos:procedure>
+
+    <!-- filter for a time period -->
     <sos:temporalFilter>
         <fes:During>
             <fes:ValueReference>phenomenonTime</fes:ValueReference>
             <gml:TimePeriod gml:id="tp_1">
-                <gml:beginPosition>2012-11-19T14:00:00.000+01:00</gml:beginPosition>
-                <gml:endPosition>2012-11-19T15:00:00.000+01:00</gml:endPosition>
+                <gml:beginPosition>{1}</gml:beginPosition>
+                <gml:endPosition>{2}</gml:endPosition>
             </gml:TimePeriod>
         </fes:During>
     </sos:temporalFilter>
--->
-    <!-- optional -->
+
     <sos:responseFormat>http://www.opengis.net/om/2.0</sos:responseFormat>
 </sos:GetObservation>
 """
 
-##TODO move to utils
-POST_HEADER = {'Content-type': 'application/xml; charset=UTF-8'}
-
-POX_URL = "http://130.211.71.130:8080/52n-sos-webapp/sos"
+if len(sys.argv) > 1:
+    stationCode = str(sys.argv[1])
+    if stationCode not in utils.STATIONS:
+        sys.exit("Unkown station code. Must be in {}".format(utils.STATIONS.keys()))
+else:
+    sys.exit("Usage: python sos_exporter <station code>")
 
 try:
-    request = urllib.request.Request(POX_URL, XML_GET_OBS.encode("UTF-8"), POST_HEADER)
+    # replacing the blanks in XML_GET_OBS
+    xmlRequest = XML_GET_OBS.format(
+        utils.procedureId(stationCode),
+        (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:00.000+00:00"),
+        datetime.utcnow().strftime("%Y-%m-%dT%H:%M:00.000+00:00")
+    )
+
+    # sending the request
+    request = urllib.request.Request(
+        utils.POX_URL,
+        xmlRequest.encode("UTF-8"),
+        utils.POST_HEADER
+    )
+
+    # getting response
     resp_handle = urllib.request.urlopen(request)
     response = resp_handle.read().decode(resp_handle.headers.get_content_charset())
     log.debug(response)
@@ -57,28 +81,35 @@ except Exception as e:
     log.error("Error code: ", e)
     sys.exit(1)
 
+# response is an XML string. We parse it here.
 root = etree.fromstring(response)
 
+# namespace definitions for accessing with XPath.
+# for more details see: https://docs.python.org/3/library/xml.etree.elementtree.html#parsing-xml-with-namespaces
 namespaces = {
-    "sos":   "http://www.opengis.net/sos/2.0",
-    "xsi":   "http://www.w3.org/2001/XMLSchema-instance",
-    "om":    "http://www.opengis.net/om/2.0",
-    "gml":   "http://www.opengis.net/gml/3.2",
+    "sos": "http://www.opengis.net/sos/2.0",
+    "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+    "om": "http://www.opengis.net/om/2.0",
+    "gml": "http://www.opengis.net/gml/3.2",
     "xlink": "http://www.w3.org/1999/xlink"
 }
+
 gmlid = "{{{0}}}id".format(namespaces["gml"])
 xlinkhref = "{{{0}}}href".format(namespaces["xlink"])
 
+# stores parsed phenomena in a dictionary with observedProperty as key
 phenomenons = {}
+
+# stores all observations with datetime as key
 observations = {}
 
 for observation in root.findall("sos:observationData/om:OM_Observation", namespaces):
     timeInstant = observation.find("om:phenomenonTime/gml:TimeInstant", namespaces)
 
     timestring = timeInstant.find("gml:timePosition", namespaces).text
-    log.info("New timeinstance: {0} = {1}".format(timeInstant.attrib[gmlid], timestring))
+    log.debug("New timeinstance: {0} = {1}".format(timeInstant.attrib[gmlid], timestring))
     phenomenon = observation.find("om:observedProperty", namespaces).attrib[xlinkhref]
-    log.info(phenomenon)
+    log.debug(phenomenon)
 
     if phenomenon not in phenomenons:
         phenomenons[phenomenon] = observation.find("om:result", namespaces).attrib["uom"]
@@ -89,25 +120,31 @@ for observation in root.findall("sos:observationData/om:OM_Observation", namespa
         obs = []
 
     obs.insert(list(phenomenons).index(phenomenon), float(observation.find("om:result", namespaces).text))
-    log.info(obs)
+    log.debug(obs)
 
     observations[timestring] = obs
 
+# for graphing we need everything sorted by time.
 sortedTimes = sorted(observations.keys())
 
+# format for x and y axis text
 y_formatter = ticker.ScalarFormatter(useOffset=False)
+x_formatter = md.DateFormatter('%H:%M')
+
+# create a number of subplots according to the number of parsed phenomena
 fig, ax = plt.subplots(len(phenomenons), sharex=True)
 
+# loop over all phenomena and print into the subplots
 for num in range(0, len(phenomenons)):
     mylist = [observations[x][num] for x in sortedTimes]
-    log.info(mylist)
+    log.debug(mylist)
     ax[num].yaxis.set_major_formatter(y_formatter)
-    ax[num].plot([datetime.datetime.strptime(i, "%Y-%m-%dT%H:%M:%S.000Z") for i in sortedTimes],
-             mylist, 'bo-')
+    ax[num].xaxis.set_major_formatter(x_formatter)
+    ax[num].plot([datetime.strptime(i, "%Y-%m-%dT%H:%M:%S.000Z") for i in sortedTimes], mylist, 'go-')
     ax[num].set_title(list(phenomenons)[num])
     ax[num].set_ylabel(phenomenons[list(phenomenons)[num]])
-    rp = ((max(mylist)-min(mylist))/10)
-    ax[num].set_ylim(min(mylist)-rp, max(mylist)+rp)
+    rp = ((max(mylist) - min(mylist)) / 10)
+    ax[num].set_ylim(min(mylist) - rp, max(mylist) + rp)
 
 plt.tight_layout()
 plt.show()
