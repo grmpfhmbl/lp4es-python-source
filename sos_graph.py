@@ -77,7 +77,7 @@ try:
         datetime.utcnow().strftime("%Y-%m-%dT%H:%M:00.000+00:00")
     )
 
-    log.debug(xmlRequest)
+#    log.debug(xmlRequest)
 
     # sending the request
     request = urllib.request.Request(
@@ -89,7 +89,7 @@ try:
     # getting response
     resp_handle = urllib.request.urlopen(request)
     response = resp_handle.read().decode(resp_handle.headers.get_content_charset())
-    log.debug(response)
+#    log.debug(response)
     resp_handle.close()
 except Exception as e:
     log.error("Error code: ", e)
@@ -121,20 +121,24 @@ for observation in root.findall("sos:observationData/om:OM_Observation", namespa
     timeInstant = observation.find("om:phenomenonTime/gml:TimeInstant", namespaces)
 
     timestring = timeInstant.find("gml:timePosition", namespaces).text
-    log.debug("New timeinstance: {0} = {1}".format(timeInstant.attrib[gmlid], timestring))
+#    log.debug("New timeinstance: {0} = {1}".format(timeInstant.attrib[gmlid], timestring))
     phenomenon = observation.find("om:observedProperty", namespaces).attrib[xlinkhref]
-    log.debug(phenomenon)
+#    log.debug(phenomenon)
 
     if phenomenon not in phenomenons:
         phenomenons[phenomenon] = observation.find("om:result", namespaces).attrib["uom"]
+        log.debug("adding phen")
+        for obs in observations:
+            if (len(observations[obs]) < len(list(phenomenons))):
+                observations[obs].append(0.0)
+            log.debug("====>>> {0}".format(observations[obs]))
 
     if timestring in observations:
         obs = observations[timestring]
     else:
-        obs = []
+        obs = [0.0] * len(list(phenomenons))
 
-    obs.insert(list(phenomenons).index(phenomenon), float(observation.find("om:result", namespaces).text))
-    log.debug(obs)
+    obs[list(phenomenons).index(phenomenon)] = float(observation.find("om:result", namespaces).text)
 
     observations[timestring] = obs
 
@@ -143,10 +147,13 @@ sortedTimes = sorted(observations.keys())
 
 # format for x and y axis text
 y_formatter = ticker.ScalarFormatter(useOffset=False)
-x_formatter = md.DateFormatter('%H:%M')
+if proc == 'gsod':
+    x_formatter = md.DateFormatter('%Y-%m-%d')
+else:
+    x_formatter = md.DateFormatter('%H:%M')
 
 # create a number of subplots according to the number of parsed phenomena
-fig, ax = plt.subplots(len(phenomenons), sharex=True)
+fig, ax = plt.subplots(len(phenomenons), sharex=True, figsize=(15 , 12))
 
 # loop over all phenomena and print into the subplots
 for num in range(0, len(phenomenons)):
@@ -160,5 +167,7 @@ for num in range(0, len(phenomenons)):
     rp = ((max(mylist) - min(mylist)) / 10)
     ax[num].set_ylim(min(mylist) - rp, max(mylist) + rp)
 
+locs, labels = plt.xticks()
+plt.setp(labels, rotation=45)
 plt.tight_layout()
 plt.show()
