@@ -7,8 +7,11 @@ POST_HEADER = {'Content-type': 'application/xml; charset=UTF-8'}
 
 STATIONS = {
     'LOWS': ["Salzburg Airport", "47.795 13.00388333"],
-    'LOWI': ["Innsbruck Airport", "47.260 11.344"]
-
+    'LOWI': ["Innsbruck Airport", "47.260 11.344"],
+    'LOWL': ["Linz Airport", "48.233 14.188"],
+    'LOWW': ["Vienna Airport (Schwechat)", "48.110 16.570"],
+    'LOWG': ["Graz Airport", "46.991 15.440"],
+    'LOWK': ["Klagenfurt Airport", "46.650 14.333"],
 }
 
 

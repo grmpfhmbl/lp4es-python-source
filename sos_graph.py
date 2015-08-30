@@ -32,16 +32,16 @@ XML_GET_OBS = """<?xml version="1.0" encoding="UTF-8"?>
     service="SOS" version="2.0.0"
     xsi:schemaLocation="http://www.opengis.net/sos/2.0 http://schemas.opengis.net/sos/2.0/sos.xsd">
 
-    <!-- the procedure we want to query
-    <sos:procedure></sos:procedure>
-     -->
+    <!-- the procedure we want to query -->
+    <sos:procedure>{1}</sos:procedure>
+
     <!-- filter for a time period -->
     <sos:temporalFilter>
         <fes:During>
             <fes:ValueReference>phenomenonTime</fes:ValueReference>
             <gml:TimePeriod gml:id="tp_1">
-                <gml:beginPosition>{1}</gml:beginPosition>
-                <gml:endPosition>{2}</gml:endPosition>
+                <gml:beginPosition>{2}</gml:beginPosition>
+                <gml:endPosition>{3}</gml:endPosition>
             </gml:TimePeriod>
         </fes:During>
     </sos:temporalFilter>
@@ -63,6 +63,7 @@ try:
     # replacing the blanks in XML_GET_OBS
     xmlRequest = XML_GET_OBS.format(
         utils.featureId(stationCode),
+        utils.procedureId('metar'),
         (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:00.000+00:00"),
         datetime.utcnow().strftime("%Y-%m-%dT%H:%M:00.000+00:00")
     )
