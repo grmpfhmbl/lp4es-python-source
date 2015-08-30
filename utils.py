@@ -6,12 +6,13 @@ POX_URL = "http://130.211.71.130:8080/52n-sos-webapp/sos"
 POST_HEADER = {'Content-type': 'application/xml; charset=UTF-8'}
 
 STATIONS = {
-    'LOWS': ["Salzburg Airport", "47.795 13.00388333"],
-    'LOWI': ["Innsbruck Airport", "47.260 11.344"],
-    'LOWL': ["Linz Airport", "48.233 14.188"],
-    'LOWW': ["Vienna Airport (Schwechat)", "48.110 16.570"],
-    'LOWG': ["Graz Airport", "46.991 15.440"],
-    'LOWK': ["Klagenfurt Airport", "46.650 14.333"],
+    #ICAOx: ["Name/Descr",                 "lon lat",       "USAF",   "WBAN"]
+    'LOWS': ["Salzburg Airport",           "47.795 13.004", "111500", "99999"],
+    'LOWI': ["Innsbruck Airport",          "47.260 11.344", "111200", "99999"],
+    'LOWL': ["Linz Airport",               "48.233 14.188", "110100", "99999"],
+    'LOWW': ["Vienna Airport (Schwechat)", "48.110 16.570", "110360", "99999"],
+    'LOWG': ["Graz Airport",               "46.991 15.440", "112400", "99999"],
+    'LOWK': ["Klagenfurt Airport",         "46.650 14.333", "112310", "99999"],
 }
 
 
@@ -33,3 +34,9 @@ def offeringXref(msgType: str):
 
 def featureId(stationId: str):
     return "http://vocab.example.com/sensorweb/feature/{}".format(stationId.lower())
+
+
+def getStationCode(usaf: str, wban: str):
+    for code in STATIONS:
+        if (STATIONS[code][2] == usaf) and (STATIONS[code][3] == wban):
+            return code

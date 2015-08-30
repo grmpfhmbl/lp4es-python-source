@@ -52,19 +52,28 @@ XML_GET_OBS = """<?xml version="1.0" encoding="UTF-8"?>
 </sos:GetObservation>
 """
 
-if len(sys.argv) > 1:
+if len(sys.argv) > 2:
     stationCode = str(sys.argv[1])
     if stationCode not in utils.STATIONS:
         sys.exit("Unkown station code. Must be in {}".format(utils.STATIONS.keys()))
+    proc = str(sys.argv[2])
+    if proc not in ['metar', 'gsod']:
+        sys.exit("2nd argument must be either 'metar' or 'gsod'")
 else:
-    sys.exit("Usage: python sos_exporter <station code>")
+    sys.exit("Usage: python sos_exporter <station code> <metar|gsod>")
 
 try:
+    print(proc)
+    if (proc == "gsod"):
+        tdDays = 31
+    else:
+        tdDays = 1
+
     # replacing the blanks in XML_GET_OBS
     xmlRequest = XML_GET_OBS.format(
         utils.featureId(stationCode),
-        utils.procedureId('metar'),
-        (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:00.000+00:00"),
+        utils.procedureId(proc),
+        (datetime.utcnow() - timedelta(days=tdDays)).strftime("%Y-%m-%dT%H:%M:00.000+00:00"),
         datetime.utcnow().strftime("%Y-%m-%dT%H:%M:00.000+00:00")
     )
 

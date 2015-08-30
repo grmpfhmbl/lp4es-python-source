@@ -57,7 +57,7 @@
                     <swe:ObservableProperty definition="http://sweet.jpl.nasa.gov/2.3/propSpeed.owl#WindSpeed"/>
                   </sml:input>
                   <sml:input name="wind_direction">
-                    <swe:ObservableProperty definition="http://vocab.example.com/phenomena/WindDirection"/>
+                    <swe:ObservableProperty definition="http://vocab.example.com/phenomenon/WindDirection"/>
                   </sml:input>
                 </sml:InputList>
               </sml:inputs>
@@ -84,7 +84,7 @@
                     </swe:Quantity>
                   </sml:output>
                   <sml:output name="wind_direction">
-                    <swe:Quantity definition="http://vocab.example.com/phenomena/WindDirection">
+                    <swe:Quantity definition="http://vocab.example.com/phenomenon/WindDirection">
                       <swe:uom code="deg"/>
                     </swe:Quantity>
                   </sml:output>
