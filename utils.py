@@ -10,21 +10,21 @@ STATIONS = {
 }
 
 
-def procedureId(stationCode: str):
-    return "http://vocab.example.com/sensorweb/procedure/metar/{}".format(stationCode.lower())
+def procedureId(msgType: str):
+    return "http://vocab.example.com/sensorweb/procedure/{0}".format(msgType.lower())
 
 
-def procedureXref(stationCode: str):
-    return '<om:procedure xlink:href="{}"/>'.format(procedureId(stationCode))
+def procedureXref(msgType: str):
+    return '<om:procedure xlink:href="{}"/>'.format(procedureId(msgType))
 
 
-def offeringId(stationCode: str):
-    return "http://vocab.example.com/sensorweb/offering/metar/{}".format(stationCode.lower())
+def offeringId(msgType: str):
+    return "http://vocab.example.com/sensorweb/offering/{0}".format(msgType.lower())
 
 
-def offeringXref(stationCode: str):
-    return "<sos:offering>{}</sos:offering>".format(offeringId(stationCode))
+def offeringXref(msgType: str):
+    return "<sos:offering>{}</sos:offering>".format(offeringId(msgType))
 
 
-def featureId(stationCode: str):
-    return "http://vocab.example.com/sensorweb/feature/metar/{}".format(stationCode.lower())
+def featureId(stationId: str):
+    return "http://vocab.example.com/sensorweb/feature/{}".format(stationId.lower())

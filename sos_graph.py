@@ -17,7 +17,7 @@ import matplotlib.dates as md
 
 import utils
 
-log.basicConfig(level=log.INFO)
+log.basicConfig(level=log.DEBUG)
 
 # the XML for GetObservation. For more details see <URL to a spec?>
 XML_GET_OBS = """<?xml version="1.0" encoding="UTF-8"?>
@@ -32,9 +32,9 @@ XML_GET_OBS = """<?xml version="1.0" encoding="UTF-8"?>
     service="SOS" version="2.0.0"
     xsi:schemaLocation="http://www.opengis.net/sos/2.0 http://schemas.opengis.net/sos/2.0/sos.xsd">
 
-    <!-- the procedure we want to query -->
-    <sos:procedure>{0}</sos:procedure>
-
+    <!-- the procedure we want to query
+    <sos:feature></sos:procedure>
+     -->
     <!-- filter for a time period -->
     <sos:temporalFilter>
         <fes:During>
@@ -45,6 +45,8 @@ XML_GET_OBS = """<?xml version="1.0" encoding="UTF-8"?>
             </gml:TimePeriod>
         </fes:During>
     </sos:temporalFilter>
+
+    <sos:featureOfInterest>{0}</sos:featureOfInterest>
 
     <sos:responseFormat>http://www.opengis.net/om/2.0</sos:responseFormat>
 </sos:GetObservation>
@@ -60,10 +62,12 @@ else:
 try:
     # replacing the blanks in XML_GET_OBS
     xmlRequest = XML_GET_OBS.format(
-        utils.procedureId(stationCode),
+        utils.featureId(stationCode),
         (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:00.000+00:00"),
         datetime.utcnow().strftime("%Y-%m-%dT%H:%M:00.000+00:00")
     )
+
+    log.debug(xmlRequest)
 
     # sending the request
     request = urllib.request.Request(

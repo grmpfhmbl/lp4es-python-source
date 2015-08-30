@@ -23,7 +23,7 @@ from metar import Metar
 
 import utils
 
-log.basicConfig(level=log.INFO)
+log.basicConfig(level=log.DEBUG)
 
 XML_INSERT_OBS = """<?xml version="1.0" encoding="UTF-8"?>
     <sos:InsertObservation
@@ -120,26 +120,31 @@ for metar in metar_list:
     log.info("==== DECODED DATA ====")
     obs = Metar.Metar(metar[1])
 
-    log.info("Original METAR: {5}\nstation: {0:4s}, time: {1:20s}, temp: {2:5s}, dew point: {3:5s}, pressure: {4:10s}".format(
+    log.info("Original METAR: {5}\nstation: {0:4s}, time: {1:20s}, temp: {2:5s}, dew point: {3:5s}, pressure: {4:10s}, wind: {6} {7}".format(
         obs.station_id,
         obs.time.strftime("%Y-%m-%dT%H:%M:00.000+00:00"),
         obs.temp.string("C"),
         obs.dewpt.string("C"),
         obs.press.string("hpa"),
-        obs.code)
+        obs.code,
+        obs.wind_dir.string(),
+        obs.wind_speed.string("kt")
+        )
     )
 
     # these are the parts of the METAR we're interested in
     observations = [
         ("http://sweet.jpl.nasa.gov/2.3/propTemperature.owl#Temperature", "°C", obs.temp.value('C')),
         ("http://sweet.jpl.nasa.gov/2.3/propTemperature.owl#DewPoint", "°C", obs.dewpt.value('C')),
-        ("http://sweet.jpl.nasa.gov/2.3/phenAtmoPressure.owl#Barometric", "hPa", obs.press.value('hPa'))
+        ("http://sweet.jpl.nasa.gov/2.3/phenAtmoPressure.owl#Barometric", "hPa", obs.press.value('hPa')),
+        ("http://sweet.jpl.nasa.gov/2.3/propSpeed.owl#WindSpeed", "kn", obs.wind_speed.value('kt')),
+        ("http://vocab.example.com/phenomenon/WindDirection", "hPa", obs.wind_dir.value())
     ]
 
     # create XML strings
     featureXml = XML_FEATURE.format(obs.station_id.lower(), utils.featureId(obs.station_id), obs.station_id, utils.STATIONS[obs.station_id][1])
     timePositionXml = XML_TIME_POSITION.format(obs.time.strftime("%Y-%m-%dT%H:%M:00.000+00:00"))
-    procedureXref = utils.procedureXref(obs.station_id)
+    procedureXref = utils.procedureXref("metar")
 
     # loop over all interesting observations and push them into the SOS
     for observation in observations:
@@ -150,7 +155,7 @@ for metar in metar_list:
             xmlResult = XML_RESULT.format(observation[1], observation[2])
 
         content = timePositionXml + procedureXref + xmlObsProp + featureXml + xmlResult
-        insertObsXml = XML_INSERT_OBS.format(utils.offeringId(obs.station_id), content)
+        insertObsXml = XML_INSERT_OBS.format(utils.offeringId("metar"), content)
 
         log.debug(insertObsXml)
 
