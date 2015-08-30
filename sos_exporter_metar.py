@@ -138,7 +138,7 @@ for metar in metar_list:
         ("http://sweet.jpl.nasa.gov/2.3/propTemperature.owl#DewPoint", "°C", obs.dewpt.value('C')),
         ("http://sweet.jpl.nasa.gov/2.3/phenAtmoPressure.owl#Barometric", "hPa", obs.press.value('hPa')),
         ("http://sweet.jpl.nasa.gov/2.3/propSpeed.owl#WindSpeed", "kn", obs.wind_speed.value('kt')),
-        ("http://vocab.example.com/phenomenon/WindDirection", "hPa", obs.wind_dir.value())
+        ("http://vocab.example.com/phenomenon/WindDirection", "deg", obs.wind_dir.value())
     ]
 
     # create XML strings

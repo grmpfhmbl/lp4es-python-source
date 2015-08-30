@@ -33,7 +33,7 @@ XML_GET_OBS = """<?xml version="1.0" encoding="UTF-8"?>
     xsi:schemaLocation="http://www.opengis.net/sos/2.0 http://schemas.opengis.net/sos/2.0/sos.xsd">
 
     <!-- the procedure we want to query
-    <sos:feature></sos:procedure>
+    <sos:procedure></sos:procedure>
      -->
     <!-- filter for a time period -->
     <sos:temporalFilter>
