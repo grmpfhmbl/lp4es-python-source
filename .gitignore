@@ -1,3 +1,8 @@
+histalp/**
+gsod/**
+
+!histalp/readme.txt
+!gsod/readme.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
