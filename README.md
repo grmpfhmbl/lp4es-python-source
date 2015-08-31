@@ -8,9 +8,7 @@ prerequisites - SOS server
 
 1. First you need to install a SOS server e.g. from http://52north.org/communities/sensorweb/sos/
    Follow the installation documents from there.
-2. You need to create a sensor for every station you want to query. You can use the example in
-   the sensorml/ directory and alter it to your needs. If you choose the 52north SOS, you
-   can use their test client, to create the sensors.
+2. the directory sensorml contains the needed sensor descriptions. The 52north-SOS 
 
 prerequisites - python 3.4
 --------------------------

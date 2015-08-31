@@ -19,6 +19,7 @@ import os
 import re
 import traceback
 import urllib.request
+import gzip
 
 import utils
 
@@ -88,6 +89,7 @@ XML_RESULT_TEXT = """
     <om:result xsi:type="xs:string">{0}</om:result>
 """
 
+
 def parseGsodLine(line: str):
     splitLine = line.split()
     log.debug("Parsing line {0}".format(splitLine))
@@ -143,6 +145,7 @@ def parseGsodLine(line: str):
     )
     return (stationCode, date, meanTemp, maxTemp, minTemp, meanWindSpd, maxWindSpd, gustWindSpd, precipitation)
 
+
 def createInsertSensorXml(obs):
     featureXml = XML_FEATURE.format(obs[0].lower(), utils.featureId(obs[0]), obs[0], utils.STATIONS[obs[0]][1])
     timePositionXml = XML_TIME_POSITION.format(obs[1].strftime("%Y-%m-%dT23:59:59.000+00:00"))
@@ -169,10 +172,31 @@ def createInsertSensorXml(obs):
             result.append(insertObsXml)
     return result
 
+YEARS = [2015, 2014]
+
+GSOD_URL = "http://www1.ncdc.noaa.gov/pub/data/gsod/{0}/{1}"
+
+GSOD_FILE_PATH = "./gsod/"
+
+#download GSOD-files
+for station in utils.STATIONS:
+    for year in YEARS:
+        args = utils.STATIONS[station][2:4] + [year]
+        filenameIn = "{0}-{1}-{2}.op.gz".format(*args)
+        filenameOut = "{0}-{1}-{2}.op".format(*args)
+        log.info("Downloading {0}".format(filenameIn))
+        urllib.request.urlretrieve(GSOD_URL.format(year, filenameIn), GSOD_FILE_PATH + filenameIn)
+        gzFile = gzip.open(GSOD_FILE_PATH + filenameIn)
+        log.info("Unpacking to {0}".format(GSOD_FILE_PATH + filenameOut))
+        outFile = open(GSOD_FILE_PATH + filenameOut, "wb")
+        outFile.write(gzFile.read())
+        outFile.close()
+        gzFile.close()
+        os.remove(GSOD_FILE_PATH + filenameIn)
 
 
 # iterate gsod directory to fetchdata
-for (dirpath, dirnames, filenames) in os.walk("./gsod/"):
+for (dirpath, dirnames, filenames) in os.walk(GSOD_FILE_PATH):
     filteredList = filter(re.compile(FILE_PATTERN).match, filenames)
     for filename in filteredList:
         fullname = os.path.join(dirpath, filename)
