@@ -27,73 +27,17 @@ log.basicConfig(level=log.INFO)
 
 FILE_PATTERN = "^.*\.op$"
 
-XML_INSERT_OBS = """<?xml version="1.0" encoding="UTF-8"?>
-    <sos:InsertObservation
-        xmlns:sos="http://www.opengis.net/sos/2.0"
-        xmlns:swes="http://www.opengis.net/swes/2.0"
-        xmlns:swe="http://www.opengis.net/swe/2.0"
-        xmlns:sml="http://www.opengis.net/sensorML/1.0.1"
-        xmlns:gml="http://www.opengis.net/gml/3.2"
-        xmlns:xlink="http://www.w3.org/1999/xlink"
-        xmlns:om="http://www.opengis.net/om/2.0"
-        xmlns:sams="http://www.opengis.net/samplingSpatial/2.0"
-        xmlns:sf="http://www.opengis.net/sampling/2.0"
-        xmlns:xs="http://www.w3.org/2001/XMLSchema"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.opengis.net/sos/2.0 http://schemas.opengis.net/sos/2.0/sos.xsd http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd"
-        service="SOS" version="2.0.0">
-    <sos:offering>{0}</sos:offering>
-    <sos:observation>
-            <om:OM_Observation gml:id="o1">
-            <om:type xlink:href="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement"/>
-    {1}
-    </om:OM_Observation>
-        </sos:observation>
-    </sos:InsertObservation>
-"""
+YEARS = [2015, 2014]
 
-XML_FEATURE = """
-    <om:featureOfInterest>
-        <sams:SF_SpatialSamplingFeature gml:id="ssf_feature_{0}">
-            <gml:identifier codeSpace="http://weather.noaa.gov/">{1}</gml:identifier>
-            <gml:name>{2}</gml:name>
-            <sf:type xlink:href="http://www.opengis.net/def/samplingFeatureType/OGC-OM/2.0/SF_SamplingPoint"/>
-            <sf:sampledFeature xlink:href="http://sweet.jpl.nasa.gov/2.3/realm.owl#Atmosphere"/>
-            <sams:shape>
-                <gml:Point gml:id="feature_{0}">
-                    <gml:pos srsName="http://www.opengis.net/def/crs/EPSG/0/4326">{3}</gml:pos>
-                </gml:Point>
-            </sams:shape>
-        </sams:SF_SpatialSamplingFeature>
-    </om:featureOfInterest>
-"""
+GSOD_URL = "http://www1.ncdc.noaa.gov/pub/data/gsod/{0}/{1}"
 
-XML_TIME_POSITION = """
-    <om:phenomenonTime>
-        <gml:TimeInstant gml:id="phenomenonTime">
-            <gml:timePosition>{0}</gml:timePosition>
-        </gml:TimeInstant>
-    </om:phenomenonTime>
-    <om:resultTime xlink:href="#phenomenonTime"/>
-"""
-
-XML_OBSERVED_PROPERTY = """
-    <om:observedProperty xlink:href="{0}"/>
-"""
-
-XML_RESULT = """
-    <om:result xsi:type="gml:MeasureType" uom="{0}">{1}</om:result>
-"""
-
-XML_RESULT_TEXT = """
-    <om:result xsi:type="xs:string">{0}</om:result>
-"""
+GSOD_FILE_PATH = "./gsod/"
 
 
 def parseGsodLine(line: str):
     splitLine = line.split()
     log.debug("Parsing line {0}".format(splitLine))
-    stationCode = utils.getStationCode(splitLine[0], splitLine[1])
+    stationCode = utils.getStationCodeFromUsaf(splitLine[0], splitLine[1])
     date = datetime.datetime.strptime(splitLine[2], "%Y%m%d")
     if (float(splitLine[3]) != 9999.9):
         meanTemp = (float(splitLine[3]) - 32) / 1.8
@@ -147,8 +91,8 @@ def parseGsodLine(line: str):
 
 
 def createInsertSensorXml(obs):
-    featureXml = XML_FEATURE.format(obs[0].lower(), utils.featureId(obs[0]), obs[0], utils.STATIONS[obs[0]][1])
-    timePositionXml = XML_TIME_POSITION.format(obs[1].strftime("%Y-%m-%dT23:59:59.000+00:00"))
+    featureXml = utils.XML_FEATURE.format(obs[0].lower(), utils.featureId(obs[0]), obs[0], utils.STATIONS[obs[0]][1])
+    timePositionXml = utils.XML_TIME_POSITION.format(obs[1].strftime("%Y-%m-%dT23:59:59.000+00:00"))
     procedureXref = utils.procedureXref("gsod")
 
     observations = [
@@ -164,21 +108,16 @@ def createInsertSensorXml(obs):
     result = []
     for i in range(2, len(obs)):
         if obs[i] not in [9999.9, 999.9, 99.99]:
-            xmlObsProp = XML_OBSERVED_PROPERTY.format(observations[i - 2][0])
-            xmlResult = XML_RESULT.format(observations[i - 2][1], obs[i])
+            xmlObsProp = utils.XML_OBSERVED_PROPERTY.format(observations[i - 2][0])
+            xmlResult = utils.XML_RESULT.format(observations[i - 2][1], obs[i])
             content = timePositionXml + procedureXref + xmlObsProp + featureXml + xmlResult
-            insertObsXml = XML_INSERT_OBS.format(utils.offeringId("gsod"), content)
+            insertObsXml = utils.XML_INSERT_OBS.format(utils.offeringId("gsod"), content)
             log.debug(insertObsXml)
             result.append(insertObsXml)
     return result
 
-YEARS = [2015, 2014]
 
-GSOD_URL = "http://www1.ncdc.noaa.gov/pub/data/gsod/{0}/{1}"
-
-GSOD_FILE_PATH = "./gsod/"
-
-#download GSOD-files
+# download GSOD-files
 for station in utils.STATIONS:
     for year in YEARS:
         args = utils.STATIONS[station][2:4] + [year]
