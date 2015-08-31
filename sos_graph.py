@@ -63,7 +63,6 @@ else:
     sys.exit("Usage: python sos_exporter <station code> <metar|gsod>")
 
 try:
-    print(proc)
     if (proc == "gsod"):
         tdDays = 31
     else:
@@ -89,7 +88,7 @@ try:
     # getting response
     resp_handle = urllib.request.urlopen(request)
     response = resp_handle.read().decode(resp_handle.headers.get_content_charset())
-#    log.debug(response)
+    log.debug(response)
     resp_handle.close()
 except Exception as e:
     log.error("Error code: ", e)
@@ -130,7 +129,7 @@ for observation in root.findall("sos:observationData/om:OM_Observation", namespa
         log.debug("adding phen")
         for obs in observations:
             if (len(observations[obs]) < len(list(phenomenons))):
-                observations[obs].append(0.0)
+                observations[obs].insert(list(phenomenons).index(phenomenon), 0.0)
             log.debug("====>>> {0}".format(observations[obs]))
 
     if timestring in observations:
