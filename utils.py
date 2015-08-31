@@ -3,8 +3,6 @@
 
 POX_URL = "http://130.211.71.130:8080/52n-sos-webapp/sos"
 
-POST_HEADER = {'Content-type': 'application/xml; charset=UTF-8'}
-
 STATIONS = {
     # ICAOx:["Name/Descr",                 "lon lat",       "USAF",   "WBAN",  "HISTALP"]
     'LOWS': ["Salzburg Airport",           "47.795 13.004", "111500", "99999", "AT_SAL"],
@@ -15,6 +13,7 @@ STATIONS = {
     'LOWK': ["Klagenfurt Airport",         "46.650 14.333", "112310", "99999", "AT_KLA"],
 }
 
+POST_HEADER = {'Content-type': 'application/xml; charset=UTF-8'}
 
 XML_INSERT_OBS = """<?xml version="1.0" encoding="UTF-8"?>
     <sos:InsertObservation

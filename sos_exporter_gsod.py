@@ -25,13 +25,13 @@ import utils
 
 log.basicConfig(level=log.INFO)
 
-FILE_PATTERN = "^.*\.op$"
-
 YEARS = [2015, 2014]
 
 GSOD_URL = "http://www1.ncdc.noaa.gov/pub/data/gsod/{0}/{1}"
 
 GSOD_FILE_PATH = "./gsod/"
+
+FILE_PATTERN = "^.*\.op$"
 
 
 def parseGsodLine(line: str):

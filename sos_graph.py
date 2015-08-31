@@ -17,7 +17,7 @@ import matplotlib.dates as md
 
 import utils
 
-log.basicConfig(level=log.DEBUG)
+log.basicConfig(level=log.INFO)
 
 # the XML for GetObservation. For more details see <URL to a spec?>
 XML_GET_OBS = """<?xml version="1.0" encoding="UTF-8"?>
@@ -50,8 +50,8 @@ XML_TEMP_FILTER = """
         <fes:During>
             <fes:ValueReference>phenomenonTime</fes:ValueReference>
             <gml:TimePeriod gml:id="tp_1">
-                <gml:beginPosition>{2}</gml:beginPosition>
-                <gml:endPosition>{3}</gml:endPosition>
+                <gml:beginPosition>{0}</gml:beginPosition>
+                <gml:endPosition>{1}</gml:endPosition>
             </gml:TimePeriod>
         </fes:During>
     </sos:temporalFilter>
@@ -62,10 +62,10 @@ if len(sys.argv) > 2:
     if stationCode not in utils.STATIONS:
         sys.exit("Unkown station code. Must be in {}".format(utils.STATIONS.keys()))
     proc = str(sys.argv[2])
-    if proc not in ['metar', 'gsod']:
-        sys.exit("2nd argument must be either 'metar' or 'gsod'")
+    if proc not in ['metar', 'gsod', 'histalp']:
+        sys.exit("2nd argument must be either 'metar' or 'gsod' or 'histalp")
 else:
-    sys.exit("Usage: python sos_exporter <station code> <metar|gsod>")
+    sys.exit("Usage: python sos_exporter <station code> <metar|gsod|histalp>")
 
 try:
     if (proc == "gsod"):
@@ -167,6 +167,7 @@ else:
 
 # create a number of subplots according to the number of parsed phenomena
 fig, ax = plt.subplots(len(phenomenons), sharex=True, figsize=(15 , 12))
+fig.canvas.set_window_title("{0} data for station {1}".format(proc.upper(), stationCode))
 
 # loop over all phenomena and print into the subplots
 for num in range(0, len(phenomenons)):
