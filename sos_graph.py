@@ -35,6 +35,16 @@ XML_GET_OBS = """<?xml version="1.0" encoding="UTF-8"?>
     <!-- the procedure we want to query -->
     <sos:procedure>{1}</sos:procedure>
 
+    {2}
+
+
+    <sos:featureOfInterest>{0}</sos:featureOfInterest>
+
+    <sos:responseFormat>http://www.opengis.net/om/2.0</sos:responseFormat>
+</sos:GetObservation>
+"""
+
+XML_TEMP_FILTER = """
     <!-- filter for a time period -->
     <sos:temporalFilter>
         <fes:During>
@@ -45,11 +55,6 @@ XML_GET_OBS = """<?xml version="1.0" encoding="UTF-8"?>
             </gml:TimePeriod>
         </fes:During>
     </sos:temporalFilter>
-
-    <sos:featureOfInterest>{0}</sos:featureOfInterest>
-
-    <sos:responseFormat>http://www.opengis.net/om/2.0</sos:responseFormat>
-</sos:GetObservation>
 """
 
 if len(sys.argv) > 2:
@@ -64,16 +69,23 @@ else:
 
 try:
     if (proc == "gsod"):
-        tdDays = 31
+        xmlTime = XML_TEMP_FILTER.format(
+            (datetime.utcnow() - timedelta(days=31)).strftime("%Y-%m-%dT%H:%M:00.000+00:00"),
+            datetime.utcnow().strftime("%Y-%m-%dT%H:%M:00.000+00:00")
+        )
+    elif (proc == "histalp"):
+        xmlTime = "<!-- NO TEMP FILTER -->"
     else:
-        tdDays = 1
+        xmlTime = XML_TEMP_FILTER.format(
+            (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:00.000+00:00"),
+            datetime.utcnow().strftime("%Y-%m-%dT%H:%M:00.000+00:00")
+        )
 
     # replacing the blanks in XML_GET_OBS
     xmlRequest = XML_GET_OBS.format(
         utils.featureId(stationCode),
         utils.procedureId(proc),
-        (datetime.utcnow() - timedelta(days=tdDays)).strftime("%Y-%m-%dT%H:%M:00.000+00:00"),
-        datetime.utcnow().strftime("%Y-%m-%dT%H:%M:00.000+00:00")
+        xmlTime,
     )
 
 #    log.debug(xmlRequest)
@@ -148,6 +160,8 @@ sortedTimes = sorted(observations.keys())
 y_formatter = ticker.ScalarFormatter(useOffset=False)
 if proc == 'gsod':
     x_formatter = md.DateFormatter('%Y-%m-%d')
+elif proc == 'histalp':
+    x_formatter = md.DateFormatter('%Y-%m')
 else:
     x_formatter = md.DateFormatter('%H:%M')
 

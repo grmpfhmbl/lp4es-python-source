@@ -23,69 +23,8 @@ from metar import Metar
 
 import utils
 
-log.basicConfig(level=log.DEBUG)
+log.basicConfig(level=log.INFO)
 
-XML_INSERT_OBS = """<?xml version="1.0" encoding="UTF-8"?>
-    <sos:InsertObservation
-        xmlns:sos="http://www.opengis.net/sos/2.0"
-        xmlns:swes="http://www.opengis.net/swes/2.0"
-        xmlns:swe="http://www.opengis.net/swe/2.0"
-        xmlns:sml="http://www.opengis.net/sensorML/1.0.1"
-        xmlns:gml="http://www.opengis.net/gml/3.2"
-        xmlns:xlink="http://www.w3.org/1999/xlink"
-        xmlns:om="http://www.opengis.net/om/2.0"
-        xmlns:sams="http://www.opengis.net/samplingSpatial/2.0"
-        xmlns:sf="http://www.opengis.net/sampling/2.0"
-        xmlns:xs="http://www.w3.org/2001/XMLSchema"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.opengis.net/sos/2.0 http://schemas.opengis.net/sos/2.0/sos.xsd http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd"
-        service="SOS" version="2.0.0">
-    <sos:offering>{0}</sos:offering>
-    <sos:observation>
-            <om:OM_Observation gml:id="o1">
-            <om:type xlink:href="http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement"/>
-    {1}
-    </om:OM_Observation>
-        </sos:observation>
-    </sos:InsertObservation>
-"""
-
-XML_FEATURE = """
-    <om:featureOfInterest>
-        <sams:SF_SpatialSamplingFeature gml:id="ssf_feature_{0}">
-            <gml:identifier codeSpace="http://weather.noaa.gov/">{1}</gml:identifier>
-            <gml:name>{2}</gml:name>
-            <sf:type xlink:href="http://www.opengis.net/def/samplingFeatureType/OGC-OM/2.0/SF_SamplingPoint"/>
-            <sf:sampledFeature xlink:href="http://sweet.jpl.nasa.gov/2.3/realm.owl#Atmosphere"/>
-            <sams:shape>
-                <gml:Point gml:id="feature_{0}">
-                    <gml:pos srsName="http://www.opengis.net/def/crs/EPSG/0/4326">{3}</gml:pos>
-                </gml:Point>
-            </sams:shape>
-        </sams:SF_SpatialSamplingFeature>
-    </om:featureOfInterest>
-"""
-
-XML_TIME_POSITION = """
-    <om:phenomenonTime>
-        <gml:TimeInstant gml:id="phenomenonTime">
-            <gml:timePosition>{0}</gml:timePosition>
-        </gml:TimeInstant>
-    </om:phenomenonTime>
-    <om:resultTime xlink:href="#phenomenonTime"/>
-"""
-
-XML_OBSERVED_PROPERTY = """
-    <om:observedProperty xlink:href="{0}"/>
-"""
-
-XML_RESULT = """
-    <om:result xsi:type="gml:MeasureType" uom="{0}">{1}</om:result>
-"""
-
-XML_RESULT_TEXT = """
-    <om:result xsi:type="xs:string">{0}</om:result>
-"""
 
 if len(sys.argv) > 1:
     stationCode = str(sys.argv[1])
@@ -142,20 +81,20 @@ for metar in metar_list:
     ]
 
     # create XML strings
-    featureXml = XML_FEATURE.format(obs.station_id.lower(), utils.featureId(obs.station_id), obs.station_id, utils.STATIONS[obs.station_id][1])
-    timePositionXml = XML_TIME_POSITION.format(obs.time.strftime("%Y-%m-%dT%H:%M:00.000+00:00"))
+    featureXml = utils.XML_FEATURE.format(obs.station_id.lower(), utils.featureId(obs.station_id), obs.station_id, utils.STATIONS[obs.station_id][1])
+    timePositionXml = utils.XML_TIME_POSITION.format(obs.time.strftime("%Y-%m-%dT%H:%M:00.000+00:00"))
     procedureXref = utils.procedureXref("metar")
 
     # loop over all interesting observations and push them into the SOS
     for observation in observations:
-        xmlObsProp = XML_OBSERVED_PROPERTY.format(observation[0])
+        xmlObsProp = utils.XML_OBSERVED_PROPERTY.format(observation[0])
         if (observation[1] == ""):
-            xmlResult = XML_RESULT_TEXT.format(observation[1])
+            xmlResult = utils.XML_RESULT_TEXT.format(observation[1])
         else:
-            xmlResult = XML_RESULT.format(observation[1], observation[2])
+            xmlResult = utils.XML_RESULT.format(observation[1], observation[2])
 
         content = timePositionXml + procedureXref + xmlObsProp + featureXml + xmlResult
-        insertObsXml = XML_INSERT_OBS.format(utils.offeringId("metar"), content)
+        insertObsXml = utils.XML_INSERT_OBS.format(utils.offeringId("metar"), content)
 
         log.debug(insertObsXml)
 
@@ -163,7 +102,7 @@ for metar in metar_list:
             request = urllib.request.Request(utils.POX_URL, insertObsXml.encode("UTF-8"), utils.POST_HEADER)
             resp_handle = urllib.request.urlopen(request)
             response = resp_handle.read().decode(resp_handle.headers.get_content_charset())
-            log.debug(response)
+            log.info(response)
             resp_handle.close()
         except Exception as e:
             log.error("Error code: ", e)
