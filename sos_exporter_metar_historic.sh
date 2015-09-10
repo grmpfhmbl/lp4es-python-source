@@ -84,7 +84,7 @@ fi
 ## finally run the pyhton script!
 echo "Getting Data for $STATION - $YEAR/$MONTH"
 echo "running python3 $MYDIR/sos_exporter_metar.py --ogimet $STATION $YEAR $MONTH"
-/usr/bin/python3 "$MYDIR/sos_exporter_metar.py" --ogimet $STATION $YEAR $MONTH &> log_$STATION_$YEAR_$MONTH
+/usr/bin/python3 "$MYDIR/sos_exporter_metar.py" --ogimet $STATION $YEAR $MONTH
 
 if [[ $MONTH -eq 12 ]]; then
     MONTH=1
