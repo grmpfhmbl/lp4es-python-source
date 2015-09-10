@@ -1,6 +1,8 @@
 # this script contains a couple of variables and functions used by
 # sos_exporter and sos_graph
 
+VERSION = "0.1"
+
 POX_URL = "http://130.211.71.130:8080/52n-sos-webapp/sos"
 
 STATIONS = {

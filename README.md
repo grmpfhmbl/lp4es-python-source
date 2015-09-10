@@ -1,6 +1,7 @@
 Source for lp4es
 ================
 
+
 prerequisites - SOS server
 --------------------------
 
@@ -69,6 +70,7 @@ for all stations configured in utils.py. The years can be configured by changing
 
     python sos_exporter_gsod.py
 
+GSOD format description at [http://www1.ncdc.noaa.gov/pub/data/gsod/GSOD_DESC.txt]
 
 HISTALP export
 --------------
