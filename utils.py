@@ -3,7 +3,7 @@
 
 VERSION = "0.1"
 
-POX_URL = "http://130.211.71.130:8080/52n-sos-webapp/sos"
+POX_URL = "http://104.155.59.177:8080/52n-sos-webapp/sos"
 
 STATIONS = {
     # ICAOx:["Name/Descr",                 "lon lat",       "USAF",   "WBAN",  "HISTALP"]
