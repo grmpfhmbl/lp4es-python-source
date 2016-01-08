@@ -4,6 +4,9 @@ gsod/**
 !histalp/readme.txt
 !gsod/readme.txt
 
+output.*
+.idea/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
