@@ -11,6 +11,9 @@ import urllib.request
 
 import xml.etree.ElementTree as etree
 
+#import matplotlib
+#matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import matplotlib.dates as md
@@ -72,13 +75,21 @@ try:
         xmlTime = XML_TEMP_FILTER.format(
             (datetime.utcnow() - timedelta(days=31)).strftime("%Y-%m-%dT%H:%M:00.000+00:00"),
             datetime.utcnow().strftime("%Y-%m-%dT%H:%M:00.000+00:00")
+#            "2015-07-27T10:00:00.000+00:00",
+#            "2015-08-27T10:00:00.000+00:00"
         )
     elif (proc == "histalp"):
         xmlTime = "<!-- NO TEMP FILTER -->"
+#        xmlTime = XML_TEMP_FILTER.format(
+#            "1976-01-01T00:00:00.000+00:00",
+#            "2015-08-27T00:00:00.000+00:00"
+#        )
     else:
         xmlTime = XML_TEMP_FILTER.format(
             (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:00.000+00:00"),
             datetime.utcnow().strftime("%Y-%m-%dT%H:%M:00.000+00:00")
+#            "2015-08-26T00:00:00.000+00:00",
+#            "2015-08-27T00:00:00.000+00:00"
         )
 
     # replacing the blanks in XML_GET_OBS
@@ -88,7 +99,7 @@ try:
         xmlTime,
     )
 
-#    log.debug(xmlRequest)
+    log.debug(xmlRequest)
 
     # sending the request
     request = urllib.request.Request(
@@ -132,9 +143,9 @@ for observation in root.findall("sos:observationData/om:OM_Observation", namespa
     timeInstant = observation.find("om:phenomenonTime/gml:TimeInstant", namespaces)
 
     timestring = timeInstant.find("gml:timePosition", namespaces).text
-#    log.debug("New timeinstance: {0} = {1}".format(timeInstant.attrib[gmlid], timestring))
+    log.debug("New timeinstance: {0} = {1}".format(timeInstant.attrib[gmlid], timestring))
     phenomenon = observation.find("om:observedProperty", namespaces).attrib[xlinkhref]
-#    log.debug(phenomenon)
+    log.debug(phenomenon)
 
     if phenomenon not in phenomenons:
         phenomenons[phenomenon] = observation.find("om:result", namespaces).attrib["uom"]
@@ -166,7 +177,7 @@ else:
     x_formatter = md.DateFormatter('%H:%M')
 
 # create a number of subplots according to the number of parsed phenomena
-fig, ax = plt.subplots(len(phenomenons), sharex=True, figsize=(15 , 12))
+fig, ax = plt.subplots(len(phenomenons), sharex=True, figsize=(15, 12))
 fig.canvas.set_window_title("{0} data for station {1}".format(proc.upper(), stationCode))
 
 # loop over all phenomena and print into the subplots
@@ -184,4 +195,6 @@ for num in range(0, len(phenomenons)):
 locs, labels = plt.xticks()
 plt.setp(labels, rotation=45)
 plt.tight_layout()
+plt.savefig("output.png")
+plt.savefig("output.eps")
 plt.show()
