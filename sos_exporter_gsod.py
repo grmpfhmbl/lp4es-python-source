@@ -25,7 +25,7 @@ import utils
 
 log.basicConfig(level=log.INFO)
 
-YEARS = [2015, 2014]
+YEARS = [2012]
 
 GSOD_URL = "http://www1.ncdc.noaa.gov/pub/data/gsod/{0}/{1}"
 

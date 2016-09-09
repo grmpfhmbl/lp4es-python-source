@@ -3,16 +3,17 @@
 
 VERSION = "0.1"
 
-POX_URL = "http://104.155.59.177:8080/52n-sos-webapp/sos"
+POX_URL = "http://mondseewebgis.hermannklug.com/52n-sos-webapp/sos/pox"
+#""http://104.155.98.248:8080/52n-sos-webapp/sos"
 
 STATIONS = {
     # ICAOx:["Name/Descr",                 "lon lat",       "USAF",   "WBAN",  "HISTALP"]
     'LOWS': ["Salzburg Airport",           "47.795 13.004", "111500", "99999", "AT_SAL"],
-    'LOWI': ["Innsbruck Airport",          "47.260 11.344", "111200", "99999", "AT_INF"],
-    'LOWL': ["Linz Airport",               "48.233 14.188", "110100", "99999", "AT_HOE"],
-    'LOWW': ["Vienna Airport (Schwechat)", "48.110 16.570", "110360", "99999", "AT_SWE"],
-    'LOWG': ["Graz Airport",               "46.991 15.440", "112400", "99999", "AT_GFL"],
-    'LOWK': ["Klagenfurt Airport",         "46.650 14.333", "112310", "99999", "AT_KLA"],
+#   'LOWI': ["Innsbruck Airport",          "47.260 11.344", "111200", "99999", "AT_INF"],
+#   'LOWL': ["Linz Airport",               "48.233 14.188", "110100", "99999", "AT_HOE"],
+#   'LOWW': ["Vienna Airport (Schwechat)", "48.110 16.570", "110360", "99999", "AT_SWE"],
+#   'LOWG': ["Graz Airport",               "46.991 15.440", "112400", "99999", "AT_GFL"],
+#   'LOWK': ["Klagenfurt Airport",         "46.650 14.333", "112310", "99999", "AT_KLA"],
 }
 
 POST_HEADER = {'Content-type': 'application/xml; charset=UTF-8'}

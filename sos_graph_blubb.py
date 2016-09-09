@@ -37,12 +37,14 @@ XML_GET_OBS = """<?xml version="1.0" encoding="UTF-8"?>
 
     <!-- the procedure we want to query -->
     <sos:procedure>{1}</sos:procedure>
+    <sos:procedure>http://vocab.smart-project.info/sensorweb/procedure/rangitaiki/hydro08/p32_temperature</sos:procedure>
+    <sos:procedure>http://vocab.smart-project.info/sensorweb/procedure/rangitaiki/hydro08/p33_temperature</sos:procedure>
 
     {2}
 
-
+<!--
     <sos:featureOfInterest>{0}</sos:featureOfInterest>
-
+-->
     <sos:responseFormat>http://www.opengis.net/om/2.0</sos:responseFormat>
 </sos:GetObservation>
 """
@@ -60,42 +62,18 @@ XML_TEMP_FILTER = """
     </sos:temporalFilter>
 """
 
-if len(sys.argv) > 2:
-    stationCode = str(sys.argv[1])
-    if stationCode not in utils.STATIONS:
-        sys.exit("Unkown station code. Must be in {}".format(utils.STATIONS.keys()))
-    proc = str(sys.argv[2])
-    if proc not in ['metar', 'gsod', 'histalp']:
-        sys.exit("2nd argument must be either 'metar' or 'gsod' or 'histalp")
-else:
-    sys.exit("Usage: python sos_exporter <station code> <metar|gsod|histalp>")
-
 try:
-    if (proc == "gsod"):
-        xmlTime = XML_TEMP_FILTER.format(
-#            (datetime.utcnow() - timedelta(days=31)).strftime("%Y-%m-%dT%H:%M:00.000+00:00"),
-#            datetime.utcnow().strftime("%Y-%m-%dT%H:%M:00.000+00:00")
-            "2015-07-27T10:00:00.000+00:00",
-            "2015-08-27T10:00:00.000+00:00"
-        )
-    elif (proc == "histalp"):
-        xmlTime = "<!-- NO TEMP FILTER -->"
-#        xmlTime = XML_TEMP_FILTER.format(
-#            "1976-01-01T00:00:00.000+00:00",
-#            "2015-08-27T00:00:00.000+00:00"
-#        )
-    else:
-        xmlTime = XML_TEMP_FILTER.format(
+    xmlTime = XML_TEMP_FILTER.format(
 #            (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:00.000+00:00"),
 #            datetime.utcnow().strftime("%Y-%m-%dT%H:%M:00.000+00:00")
-            "2015-08-26T00:00:00.000+00:00",
-            "2015-08-27T00:00:00.000+00:00"
-        )
+        "2015-07-22T00:00:00.000+00:00",
+        "2015-12-10T00:00:00.000+00:00"
+    )
 
     # replacing the blanks in XML_GET_OBS
     xmlRequest = XML_GET_OBS.format(
-        utils.featureId(stationCode),
-        utils.procedureId(proc),
+        "http://vocab.smart-project.info/sensorweb/procedure/rangitaiki/hydro08",
+        "http://vocab.smart-project.info/sensorweb/procedure/rangitaiki/hydro08/p10_wind_speed",
         xmlTime,
     )
 
@@ -103,7 +81,7 @@ try:
 
     # sending the request
     request = urllib.request.Request(
-        utils.POX_URL,
+        "http://portal.smart-project.info/sos-smart-ur/sos/pox",
         xmlRequest.encode("UTF-8"),
         utils.POST_HEADER
     )
@@ -166,19 +144,15 @@ for observation in root.findall("sos:observationData/om:OM_Observation", namespa
 
 # for graphing we need everything sorted by time.
 sortedTimes = sorted(observations.keys())
+log.info("{0} observations read".format(len(observations)))
 
 # format for x and y axis text
 y_formatter = ticker.ScalarFormatter(useOffset=False)
-if proc == 'gsod':
-    x_formatter = md.DateFormatter('%Y-%m-%d')
-elif proc == 'histalp':
-    x_formatter = md.DateFormatter('%Y-%m')
-else:
-    x_formatter = md.DateFormatter('%H:%M')
+x_formatter = md.DateFormatter('%Y-%m-%d - %H:%M')
 
 # create a number of subplots according to the number of parsed phenomena
 fig, ax = plt.subplots(len(phenomenons), sharex=True, figsize=(15, 12))
-fig.canvas.set_window_title("{0} data for station {1}".format(proc.upper(), stationCode))
+fig.canvas.set_window_title("{0} data for station {1}".format("http://vocab.smart-project.info/sensorweb/procedure/rangitaiki/hydro08", "p10_wind_speed"))
 
 # loop over all phenomena and print into the subplots
 for num in range(0, len(phenomenons)):
